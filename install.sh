@@ -102,9 +102,9 @@ else
         -e N8N_SECURE_COOKIE="${N8N_SECURE_COOKIE}" \
         -e N8N_PROTOCOL="${N8N_PROTOCOL}" \
         -e N8N_HOST="${N8N_HOST}" \
-        -e WEBHOOK_TUNNEL_URL="${WEBHOOK_TUNNEL_URL}" \
-        -e N8N_EDITOR_BASE_URL="${N8N_EDITOR_BASE_URL}" \
-        -e WEBHOOK_URL="${WEBHOOK_URL}" \
+        -e WEBHOOK_TUNNEL_URL="${N8N_HOST}" \
+        -e N8N_EDITOR_BASE_URL="${N8N_HOST}" \
+        -e WEBHOOK_URL="${N8N_HOST}" \
         n8nio/n8n:latest
 
     INSTALLED_N8N_URL="${N8N_HOST}:${N8N_PORT}"
