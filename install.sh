@@ -11,9 +11,23 @@ NC='\033[0m' # No Color (reset)
 if [[ -f .env ]]; then
     set -a && source .env && set +a
 else
-    echo "ERROR: No se encontró el archivo .env. Crea uno con PORTAINER_PORT y N8N_PORT."
+    echo "ERROR: No se encontró el archivo .env. Crea uno con PORTAINER_PORT, N8N_PORT, N8N_TIME_ZONE y N8N_HOST."
     exit 1
 fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Determinar protocolo y configuración de cookie según N8N_HOST
+# ─────────────────────────────────────────────────────────────────────────────
+if [[ "${N8N_HOST}" =~ ^https?:// ]]; then
+    N8N_PROTOCOL="https"
+    N8N_SECURE_COOKIE="true"
+else
+    N8N_PROTOCOL="http"
+    N8N_SECURE_COOKIE="false"
+fi
+
+# Mostrar valores determinados
+echo -e "${GREEN}Usando N8N_PROTOCOL=${N8N_PROTOCOL}, N8N_SECURE_COOKIE=${N8N_SECURE_COOKIE}${NC}"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Actualizar repositorios y paquetes
@@ -37,19 +51,10 @@ if ! command -v docker >/dev/null 2>&1; then
     echo "Docker no encontrado. Instalando Docker..."
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg |
         sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-
-    echo \
-        "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] \
-    https://download.docker.com/linux/ubuntu \
-    $(lsb_release -cs) stable" |
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" |
         sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
-
-    sudo apt update
-    sudo apt install -y docker-ce docker-ce-cli containerd.io
-
-    sudo systemctl enable docker
-    sudo systemctl start docker
-
+    sudo apt update && sudo apt install -y docker-ce docker-ce-cli containerd.io
+    sudo systemctl enable --now docker
     sudo usermod -aG docker "$USER"
     echo -e "${GREEN}Docker instalado: $(docker --version)${NC}"
 else
@@ -75,15 +80,10 @@ if docker container inspect portainer >/dev/null 2>&1; then
 else
     echo "Instalando Portainer..."
     sudo docker volume create portainer_data
-    sudo docker run -d \
-        --name portainer \
-        --restart=always \
-        -p 8000:8000 \
-        -p "${PORTAINER_PORT}":9000 \
-        -v /var/run/docker.sock:/var/run/docker.sock \
-        -v portainer_data:/data \
+    sudo docker run -d --name portainer --restart=always \
+        -p 8000:8000 -p "${PORTAINER_PORT}":9000 \
+        -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data \
         portainer/portainer-ce
-
     sudo docker restart portainer
     echo -e "${GREEN}Portainer instalado y accesible en: http://$(hostname -I | awk '{print $1}'):${PORTAINER_PORT}${NC}"
 fi
@@ -96,9 +96,7 @@ if docker container inspect n8n >/dev/null 2>&1; then
 else
     echo "Instalando n8n..."
     sudo docker volume create n8n_data
-    sudo docker run -d \
-        --name n8n \
-        --restart=always \
+    sudo docker run -d --name n8n --restart=always \
         -p "${N8N_PORT}":5678 \
         -v n8n_data:/home/node/.n8n \
         -e TZ="${N8N_TIME_ZONE}" \
@@ -109,8 +107,8 @@ else
         n8nio/n8n:latest
 
     # Construir URL dinámicamente según la configuración
-    if [[ "${N8N_HOST}" == "http://localhost/" ]]; then
-        INSTALLED_N8N_URL="http://$(hostname -I | awk '{print $1}'):${N8N_PORT}"
+    if [[ "${N8N_HOST}" =~ ^https?:// ]]; then
+        INSTALLED_N8N_URL="${N8N_HOST}"
     else
         INSTALLED_N8N_URL="${N8N_PROTOCOL}://${N8N_HOST}:${N8N_PORT}"
     fi
