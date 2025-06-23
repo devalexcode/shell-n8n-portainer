@@ -112,6 +112,9 @@ else
     else
         INSTALLED_N8N_URL="${N8N_PROTOCOL}://${N8N_HOST}:${N8N_PORT}"
     fi
+
+    echo "n8n instalado y accesible en: ${INSTALLED_N8N_URL}"
+
     # Notificar si se ha deshabilitado la cookie secure
     if [[ "${N8N_SECURE_COOKIE}" == "false" ]]; then
         echo "ADVERTENCIA: la cookie 'secure' está deshabilitada (N8N_SECURE_COOKIE=false)."
