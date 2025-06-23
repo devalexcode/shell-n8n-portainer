@@ -94,36 +94,20 @@ else
     echo "Instalando n8n..."
     sudo docker volume create n8n_data
 
-    if [[ "${N8N_HOST}" != "http://localhost/" ]]; then
-        sudo docker run -d --name n8n --restart=always \
-            -p "${N8N_PORT}":5678 \
-            -v n8n_data:/home/node/.n8n \
-            -e TZ="${N8N_TIME_ZONE}" \
-            -e GENERIC_TIMEZONE="${N8N_TIME_ZONE}" \
-            -e N8N_SECURE_COOKIE="${N8N_SECURE_COOKIE}" \
-            -e N8N_PROTOCOL="${N8N_PROTOCOL}" \
-            -e N8N_HOST="${N8N_HOST}" \
-            -e WEBHOOK_TUNNEL_URL="${WEBHOOK_TUNNEL_URL}" \
-            -e N8N_EDITOR_BASE_URL="${N8N_EDITOR_BASE_URL}" \
-            -e WEBHOOK_URL="${WEBHOOK_URL}" \
-            n8nio/n8n:latest
+    sudo docker run -d --name n8n --restart=always \
+        -p "${N8N_PORT}":5678 \
+        -v n8n_data:/home/node/.n8n \
+        -e TZ="${N8N_TIME_ZONE}" \
+        -e GENERIC_TIMEZONE="${N8N_TIME_ZONE}" \
+        -e N8N_SECURE_COOKIE="${N8N_SECURE_COOKIE}" \
+        -e N8N_PROTOCOL="${N8N_PROTOCOL}" \
+        -e N8N_HOST="${N8N_HOST}" \
+        -e WEBHOOK_TUNNEL_URL="${WEBHOOK_TUNNEL_URL}" \
+        -e N8N_EDITOR_BASE_URL="${N8N_EDITOR_BASE_URL}" \
+        -e WEBHOOK_URL="${WEBHOOK_URL}" \
+        n8nio/n8n:latest
 
-        # Recorta un posible slash al final de N8N_HOST
-        HOST_CLEAN="${N8N_HOST%/}"
-        INSTALLED_N8N_URL="${HOST_CLEAN}:${N8N_PORT}"
-
-    else
-        sudo docker run -d --name n8n --restart=always \
-            -p "${N8N_PORT}":5678 \
-            -v n8n_data:/home/node/.n8n \
-            -e TZ="${N8N_TIME_ZONE}" \
-            -e GENERIC_TIMEZONE="${N8N_TIME_ZONE}" \
-            -e N8N_SECURE_COOKIE="false" \
-            -e N8N_PROTOCOL="http" \
-            n8nio/n8n:latest
-
-        INSTALLED_N8N_URL="http://$(hostname -I | awk '{print $1}'):${N8N_PORT}"
-    fi
+    INSTALLED_N8N_URL="${N8N_HOST}:${N8N_PORT}"
 
     echo -e "${GREEN}n8n instalado y accesible en: ${INSTALLED_N8N_URL}${NC}"
 
