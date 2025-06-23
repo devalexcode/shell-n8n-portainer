@@ -26,9 +26,6 @@ else
     N8N_SECURE_COOKIE="false"
 fi
 
-# Mostrar valores determinados
-echo -e "${GREEN}Usando N8N_PROTOCOL=${N8N_PROTOCOL}, N8N_SECURE_COOKIE=${N8N_SECURE_COOKIE}${NC}"
-
 # ─────────────────────────────────────────────────────────────────────────────
 # Actualizar repositorios y paquetes
 # ─────────────────────────────────────────────────────────────────────────────
@@ -75,7 +72,7 @@ fi
 # ─────────────────────────────────────────────────────────────────────────────
 # Instalación de Portainer (si no está instalado)
 # ─────────────────────────────────────────────────────────────────────────────
-if docker container inspect portainer >/dev/null 2>&1; then
+if sudo docker container inspect portainer >/dev/null 2>&1; then
     echo "Portainer ya está instalado y configurado."
 else
     echo "Instalando Portainer..."
@@ -91,7 +88,7 @@ fi
 # ─────────────────────────────────────────────────────────────────────────────
 # Instalación de n8n (si no está instalado)
 # ─────────────────────────────────────────────────────────────────────────────
-if docker container inspect n8n >/dev/null 2>&1; then
+if sudo docker container inspect n8n >/dev/null 2>&1; then
     echo "n8n ya está instalado y configurado."
 else
     echo "Instalando n8n..."
