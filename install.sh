@@ -112,7 +112,12 @@ else
         n8nio/n8n:latest
 
     # Construir URL dinámicamente según la configuración
-    URL="${N8N_PROTOCOL}://${N8N_HOST}:${N8N_PORT}"
+    if [[ "${N8N_HOST}" == "http://localhost/" ]]; then
+        URL="http://$(hostname -I | awk '{print $1}'):${N8N_PORT}"
+    else
+        URL="${N8N_PROTOCOL}://${N8N_HOST}:${N8N_PORT}"
+    fi
+
     echo "n8n instalado y accesible en: ${URL}"
     # Notificar si se ha deshabilitado la cookie secure
     if [[ "${N8N_SECURE_COOKIE}" == "false" ]]; then
