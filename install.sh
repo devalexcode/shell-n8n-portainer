@@ -13,11 +13,6 @@ else
     exit 1
 fi
 
-# Validar que las variables existan
-: "${PORTAINER_PORT:?Falta definir PORTAINER_PORT en .env}"
-: "${N8N_PORT:?Falta definir N8N_PORT en .env}"
-: "${N8N_TIME_ZONE:?Falta definir N8N_TIME_ZONE en .env}"
-
 # ─────────────────────────────────────────────────────────────────────────────
 # Actualizar repositorios y paquetes
 # ─────────────────────────────────────────────────────────────────────────────
@@ -113,23 +108,15 @@ else
 
     # Construir URL dinámicamente según la configuración
     if [[ "${N8N_HOST}" == "http://localhost/" ]]; then
-        URL="http://$(hostname -I | awk '{print $1}'):${N8N_PORT}"
+        INSTALLED_N8N_URL="http://$(hostname -I | awk '{print $1}'):${N8N_PORT}"
     else
-        URL="${N8N_PROTOCOL}://${N8N_HOST}:${N8N_PORT}"
+        INSTALLED_N8N_URL="${N8N_PROTOCOL}://${N8N_HOST}:${N8N_PORT}"
     fi
-
-    echo "n8n instalado y accesible en: ${URL}"
     # Notificar si se ha deshabilitado la cookie secure
     if [[ "${N8N_SECURE_COOKIE}" == "false" ]]; then
         echo "ADVERTENCIA: la cookie 'secure' está deshabilitada (N8N_SECURE_COOKIE=false)."
     fi
 fi
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Mensaje final
-# ─────────────────────────────────────────────────────────────────────────────
-echo "¡Instalación completada! Comprueba con: docker --version, docker compose version, \
-accede a Portainer en el puerto ${PORTAINER_PORT} y n8n en el puerto ${N8N_PORT}."
 
 # Refrescar grupos para la sesión actual
 newgrp docker
