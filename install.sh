@@ -18,7 +18,7 @@ fi
 # ─────────────────────────────────────────────────────────────────────────────
 # Determinar protocolo y configuración de cookie según N8N_HOST
 # ─────────────────────────────────────────────────────────────────────────────
-if [[ "${N8N_HOST}" =~ ^https?:// ]]; then
+if [[ $N8N_HOST =~ ^https?:// ]]; then
     N8N_PROTOCOL="https"
     N8N_SECURE_COOKIE="true"
 else
