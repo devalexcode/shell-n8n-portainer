@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Colores ANSI
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color (reset)
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Cargar variables de entorno del .env (requiere que exista en el mismo directorio)
 # ─────────────────────────────────────────────────────────────────────────────
 if [[ -f .env ]]; then
-    set -a
-    source .env
-    set +a
+    set -a && source .env && set +a
 else
     echo "ERROR: No se encontró el archivo .env. Crea uno con PORTAINER_PORT y N8N_PORT."
     exit 1
@@ -49,7 +51,7 @@ if ! command -v docker >/dev/null 2>&1; then
     sudo systemctl start docker
 
     sudo usermod -aG docker "$USER"
-    echo "Docker instalado: $(docker --version)"
+    echo -e "${GREEN}Docker instalado: $(docker --version)${NC}"
 else
     echo "Docker ya está instalado: $(docker --version)"
 fi
@@ -60,7 +62,7 @@ fi
 if ! docker compose version >/dev/null 2>&1; then
     echo "Docker Compose CLI plugin no encontrado. Instalando..."
     sudo apt-get install -y docker-compose-plugin
-    echo "Docker Compose instalado: $(docker compose version)"
+    echo -e "${GREEN}Docker Compose instalado: $(docker compose version)${NC}"
 else
     echo "Docker Compose ya está instalado: $(docker compose version)"
 fi
@@ -83,7 +85,7 @@ else
         portainer/portainer-ce
 
     sudo docker restart portainer
-    echo "Portainer instalado y accesible en: http://$(hostname -I | awk '{print $1}'):${PORTAINER_PORT}"
+    echo -e "${GREEN}Portainer instalado y accesible en: http://$(hostname -I | awk '{print $1}'):${PORTAINER_PORT}${NC}"
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -102,8 +104,8 @@ else
         -e TZ="${N8N_TIME_ZONE}" \
         -e GENERIC_TIMEZONE="${N8N_TIME_ZONE}" \
         -e N8N_SECURE_COOKIE="${N8N_SECURE_COOKIE}" \
-        -e N8N_PROTOCOL=${N8N_PROTOCOL} \
-        -e N8N_HOST=${N8N_HOST} \
+        -e N8N_PROTOCOL="${N8N_PROTOCOL}" \
+        -e N8N_HOST="${N8N_HOST}" \
         n8nio/n8n:latest
 
     # Construir URL dinámicamente según la configuración
@@ -113,7 +115,7 @@ else
         INSTALLED_N8N_URL="${N8N_PROTOCOL}://${N8N_HOST}:${N8N_PORT}"
     fi
 
-    echo "n8n instalado y accesible en: ${INSTALLED_N8N_URL}"
+    echo -e "${GREEN}n8n instalado y accesible en: ${INSTALLED_N8N_URL}${NC}"
 
     # Notificar si se ha deshabilitado la cookie secure
     if [[ "${N8N_SECURE_COOKIE}" == "false" ]]; then
