@@ -104,7 +104,11 @@ else
         --restart=always \
         -p "${N8N_PORT}":5678 \
         -v n8n_data:/home/node/.n8n \
+        -e TZ="${N8N_TIME_ZONE}" \
         -e GENERIC_TIMEZONE="${N8N_TIME_ZONE}" \
+        -e N8N_SECURE_COOKIE="${N8N_TIME_ZONE}" \
+        -e N8N_PROTOCOL=${N8N_PROTOCOL} \
+        -e N8N_HOST=${N8N_HOST} \
         n8nio/n8n:latest
 
     echo "n8n instalado y accesible en: http://$(hostname -I | awk '{print $1}'):${N8N_PORT}"
