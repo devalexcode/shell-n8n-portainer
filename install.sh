@@ -18,13 +18,16 @@ fi
 # ─────────────────────────────────────────────────────────────────────────────
 # Determinar protocolo y configuración de cookie según N8N_HOST
 # ─────────────────────────────────────────────────────────────────────────────
-if [[ $N8N_HOST =~ ^https?:// ]]; then
+if [[ $N8N_URL =~ https ]]; then
     N8N_PROTOCOL="https"
     N8N_SECURE_COOKIE="true"
 else
     N8N_PROTOCOL="http"
     N8N_SECURE_COOKIE="false"
 fi
+
+tmp=${N8N_URL#*://}
+N8N_HOST=${tmp%%[:/]*}
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Actualizar repositorios y paquetes
@@ -102,14 +105,11 @@ else
         -e N8N_SECURE_COOKIE="${N8N_SECURE_COOKIE}" \
         -e N8N_PROTOCOL="${N8N_PROTOCOL}" \
         -e N8N_HOST="${N8N_HOST}" \
-        -e WEBHOOK_TUNNEL_URL="${N8N_HOST}" \
-        -e N8N_EDITOR_BASE_URL="${N8N_HOST}" \
-        -e WEBHOOK_URL="${N8N_HOST}" \
+        -e N8N_EDITOR_BASE_URL="${N8N_URL}" \
+        -e WEBHOOK_URL="${N8N_URL}" \
         n8nio/n8n:latest
 
-    INSTALLED_N8N_URL="${N8N_HOST}:${N8N_PORT}"
-
-    echo -e "${GREEN}n8n instalado y accesible en: ${INSTALLED_N8N_URL}${NC}"
+    echo -e "${GREEN}n8n instalado y accesible en: ${N8N_URL}${NC}"
 
     # Notificar si se ha deshabilitado la cookie secure
     if [[ "${N8N_SECURE_COOKIE}" == "false" ]]; then
