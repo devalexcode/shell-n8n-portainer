@@ -93,7 +93,7 @@ Portainer instalado y accesible en: http://<IP_DEL_SERVIDOR>:9000
 
 ![Login Portainer](docs/Portainer-Login-1024x705.png)
 
-¡Listo! Con estos pasos tu servidor quedará preparado para gestionar contenedores Docker a través de Portainer.
+¡Listo! Con estos pasos tu servidor quedará con n8n instalado y preparado para gestionar contenedores Docker a través de Portainer.
 
 ## 👨‍💻 Autor
 
