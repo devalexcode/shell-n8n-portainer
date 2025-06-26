@@ -89,7 +89,7 @@ else
         -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data \
         portainer/portainer-ce
     sudo docker restart portainer
-    echo -e "${GREEN}Portainer instalado y accesible en: http://$(hostname -I | awk '{print $1}'):${PORTAINER_PORT}${NC}"
+    echo -e "${GREEN}Portainer instalado y accesible en el puerto: ${PORTAINER_PORT}${NC}"
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────
