@@ -3,6 +3,7 @@ set -euo pipefail
 
 # Colores ANSI
 GREEN='\033[0;32m'
+RED='\033[0;31m'
 NC='\033[0m' # No Color (reset)
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -32,6 +33,37 @@ fi
 
 tmp=${N8N_URL#*://}
 N8N_HOST=${tmp%%[:/]*}
+
+# Obtener IP pública (global)
+PUBLIC_IP=$(curl -s http://checkip.amazonaws.com || curl -s https://icanhazip.com)
+CHECK_APP_MAX_ATTEMPTS=5
+CHECK_APP_DELAY_SECONDS=3
+
+# Función para validar que un puerto esté en escucha local y accesible externamente para una aplicación
+# Recibe Puerto y Nombre de la Aplicación
+# Realiza hasta CHECK_APP_MAX_ATTEMPTS intentos con CHECK_APP_DELAY_SECONDS segundos de delay. Si tras CHECK_APP_MAX_ATTEMPTS fallos, muestra error y termina.
+check_port_open() {
+    local PORT=$1
+    local APP_NAME=$2
+    local attempt=1
+
+    while ((attempt <= CHECK_APP_MAX_ATTEMPTS)); do
+
+        echo -e "Verificando acceso a ${APP_NAME} . . . "
+
+        sleep ${CHECK_APP_DELAY_SECONDS}
+        # Verificar respuesta del VPS
+        if nc -z -w5 "${PUBLIC_IP}" "${PORT}"; then
+            echo -e "${GREEN}¡Instalación completada! ${APP_NAME} funcionando y accesible: http://${PUBLIC_IP}:${PORT}${NC}"
+            return 0
+        fi
+        attempt=$((attempt + 1))
+    done
+
+    # Si llegamos aquí, todos los intentos fallaron
+    echo -e "${RED}Error: El puerto ${PORT} para ${APP_NAME} no es accesible externamente en ${PUBLIC_IP}:${PORT}. Verifica las reglas de entrada de tu proveedor de VPS.${NC}"
+    exit 1
+}
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Actualizar repositorios y paquetes
@@ -89,7 +121,7 @@ else
         -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data \
         portainer/portainer-ce
     sudo docker restart portainer
-    echo -e "${GREEN}Portainer instalado y accesible en el puerto: ${PORTAINER_PORT}${NC}"
+    echo -e "${GREEN}Portainer instalado${NC}"
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -113,13 +145,17 @@ else
         -e WEBHOOK_URL="${N8N_URL}" \
         n8nio/n8n:latest
 
-    echo -e "${GREEN}n8n instalado y accesible en: ${N8N_URL}${NC}"
+    echo -e "${GREEN}n8n instalado${NC}"
 
     # Notificar si se ha deshabilitado la cookie secure
     if [[ "${N8N_SECURE_COOKIE}" == "false" ]]; then
         echo "ADVERTENCIA: la cookie 'secure' está deshabilitada (N8N_SECURE_COOKIE=false)."
     fi
 fi
+
+# Validación post-instalación (asegurar que los puertos accesibles)
+check_port_open "${PORTAINER_PORT}" "Portainer"
+check_port_open "${N8N_PORT}" "n8n"
 
 # Refrescar grupos para la sesión actual
 newgrp docker
